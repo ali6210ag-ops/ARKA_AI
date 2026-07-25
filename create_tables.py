@@ -1,7 +1,7 @@
 from config.database import engine
 from config.database import Base
 
-from app.models import Product
+from app.models import Product, Supplier, Trader, TradeRequest
 
 
 print("Creating ARKA tables...")
