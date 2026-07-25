@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>ARKA AI B2B Platform</title>
+
+<style>
+
+body {
+    font-family: Tahoma, Arial;
+    background: #f5f5f5;
+    margin: 0;
+    padding: 40px;
+}
+
+
+.container {
+
+    max-width: 700px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 0 15px #ccc;
+
+}
+
+
+h1 {
+
+    text-align: center;
+    color: #d49a00;
+
+}
+
+
+input {
+
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    font-size: 16px;
+
+}
+
+
+button {
+
+    width: 100%;
+    padding: 15px;
+    background: #d49a00;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+
+}
+
+
+.result {
+
+    margin-top: 25px;
+    padding: 20px;
+    background: #fafafa;
+    border-radius: 10px;
+
+}
+
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1>
+ARKA AI
+</h1>
+
+
+<h3>
+اتصال هوشمند تامین کننده و تاجر
+</h3>
+
+
+<label>
+محصول مورد نیاز:
+</label>
+
+<input 
+id="product"
+value="عسل طبیعی"
+/>
+
+
+<label>
+مقدار مورد نیاز:
+</label>
+
+<input 
+id="quantity"
+value="5000"
+/>
+
+
+<button onclick="searchSupplier()">
+جستجوی تامین کننده
+</button>
+
+
+<div class="result" id="result">
+
+نتیجه تحلیل ARKA نمایش داده می‌شود...
+
+</div>
+
+
+</div>
+
+
+
+<script>
+
+
+async function searchSupplier(){
+
+
+let product = document.getElementById("product").value;
+
+
+let response = await fetch(
+    "/match/" + product
+);
+
+
+let data = await response.json();
+
+
+let html = "";
+
+
+
+data.matches.forEach(item => {
+
+
+html += `
+
+<h2>
+${item.supplier}
+</h2>
+
+<p>
+امتیاز تطبیق:
+<b>${item.score}%</b>
+</p>
+
+
+<p>
+دلایل:
+</p>
+
+
+<ul>
+
+${item.reasons.map(r => 
+`<li>${r}</li>`
+).join("")}
+
+</ul>
+
+
+`;
+
+
+});
+
+
+
+document.getElementById("result").innerHTML = html;
+
+
+}
+
+
+
+</script>
+
+
+</body>
+
+</html>

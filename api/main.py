@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 
 from brain.matching_engine import ARKAMatchingEngine
 
@@ -12,11 +13,7 @@ app = FastAPI(
 
 @app.get("/")
 def home():
-    return {
-        "system": "ARKA AI",
-        "status": "running",
-        "message": "B2B Matching Engine Online"
-    }
+    return FileResponse("web/index.html")
 
 
 @app.get("/match/{product_name}")
