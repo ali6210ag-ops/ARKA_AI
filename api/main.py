@@ -3,6 +3,9 @@ from fastapi.responses import FileResponse
 
 from brain.matching_engine import ARKAMatchingEngine
 
+from api.trade_request import router as trade_router
+from api.recommend import router as recommend_router
+
 
 app = FastAPI(
     title="ARKA AI B2B Platform",
@@ -11,9 +14,16 @@ app = FastAPI(
 )
 
 
+app.include_router(trade_router)
+
+app.include_router(recommend_router)
+
+
 @app.get("/")
 def home():
-    return FileResponse("web/index.html")
+    return FileResponse(
+        "web/index.html"
+    )
 
 
 @app.get("/match/{product_name}")

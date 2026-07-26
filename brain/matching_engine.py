@@ -1,5 +1,5 @@
 from config.database import SessionLocal
-from app.models import Supplier, Trader, TradeRequest
+from app.models import Supplier
 
 
 class ARKAMatchingEngine:
@@ -14,69 +14,206 @@ class ARKAMatchingEngine:
 
         results = []
 
+        product = product_needed.strip().lower()
+
+
+        product_rules = {
+
+            "فولاد": {
+                "keywords": [
+                    "فولاد",
+                    "ورق",
+                    "آهن",
+                    "میلگرد"
+                ],
+                "category": [
+                    "صنعت",
+                    "فلز"
+                ]
+            },
+
+
+            "پسته": {
+                "keywords": [
+                    "پسته",
+                    "بادام",
+                    "گردو",
+                    "خشکبار"
+                ],
+                "category": [
+                    "غذایی",
+                    "خشکبار"
+                ]
+            },
+
+
+            "عسل": {
+                "keywords": [
+                    "عسل",
+                    "زنبور",
+                    "طبیعی"
+                ],
+                "category": [
+                    "غذایی"
+                ]
+            },
+
+
+            "برنج": {
+                "keywords": [
+                    "برنج",
+                    "طارم",
+                    "کشاورزی"
+                ],
+                "category": [
+                    "غذایی",
+                    "کشاورزی"
+                ]
+            },
+
+
+            "پلیمر": {
+                "keywords": [
+                    "پلیمر",
+                    "پلاستیک"
+                ],
+                "category": [
+                    "صنعت",
+                    "مواد"
+                ]
+            }
+
+        }
+
+
+
+        rule = product_rules.get(
+
+            product,
+
+            {
+                "keywords": [product],
+                "category": []
+            }
+
+        )
+
+
+
         for supplier in suppliers:
+
 
             score = 0
             reasons = []
 
 
-            # بررسی حوزه کاری
+            text = (
+
+                (supplier.name or "")
+                +
+                (supplier.description or "")
+
+            ).lower()
+
+
+
+            # تطبیق محصول
+
+            if any(
+
+                word in text
+
+                for word in rule["keywords"]
+
+            ):
+
+                score += 60
+
+                reasons.append(
+                    "محصول دقیقاً مرتبط"
+                )
+
+
+
+            # تطبیق دسته کاری
+
             if supplier.category:
-                if "غذایی" in supplier.category or "مواد" in supplier.category:
-                    score += 30
-                    reasons.append("حوزه کاری مرتبط")
+
+                if any(
+
+                    cat in supplier.category
+
+                    for cat in rule["category"]
+
+                ):
+
+                    score += 20
+
+                    reasons.append(
+                        "حوزه کاری مرتبط"
+                    )
 
 
-            # بررسی توضیحات
-            if supplier.description:
-                if product_needed in supplier.description:
-                    score += 50
-                    reasons.append("محصول مشابه")
 
+            # اطلاعات کامل
 
-            # بررسی شهر
-            if supplier.city:
+            if supplier.city and supplier.phone:
+
                 score += 10
-                reasons.append("اطلاعات مکانی موجود")
+
+                reasons.append(
+                    "اطلاعات تامین‌کننده کامل"
+                )
 
 
-            results.append(
-                {
-                    "supplier": supplier.name,
-                    "score": score,
-                    "reasons": reasons
-                }
-            )
 
+            # فقط نتایج قابل قبول
+
+            if score >= 30:
+
+                results.append(
+
+                    {
+                        "supplier": supplier.name,
+
+                        "score": score,
+
+                        "reasons": reasons
+
+                    }
+
+                )
+
+
+
+        # مرتب‌سازی امتیاز
 
         results.sort(
+
             key=lambda x: x["score"],
+
             reverse=True
+
         )
 
-        return results
+
+
+        # حذف تکراری‌ها
+
+        unique = []
+
+        names = set()
 
 
 
-if __name__ == "__main__":
+        for item in results:
 
-    engine = ARKAMatchingEngine()
+            if item["supplier"] not in names:
 
+                unique.append(item)
 
-    matches = engine.find_match(
-        "عسل طبیعی"
-    )
-
-
-    print("=== ARKA AI Matching Result ===")
+                names.add(item["supplier"])
 
 
-    for item in matches:
 
-        print("--------------------")
-        print("Supplier:", item["supplier"])
-        print("Score:", item["score"], "%")
-        print("Reasons:")
-
-        for reason in item["reasons"]:
-            print("-", reason)
+        return unique[:5]
