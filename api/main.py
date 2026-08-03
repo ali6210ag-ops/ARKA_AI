@@ -1,3 +1,4 @@
+```python
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 
@@ -36,11 +37,12 @@ def home():
 @app.get("/match/{product_name}")
 def match_supplier(product_name: str):
 
-    engine = ARKAMatchingEngine()
+    matching_engine = ARKAMatchingEngine()
 
-    result = engine.find_match(product_name)
+    result = matching_engine.find_match(product_name)
 
     return {
         "product": product_name,
         "matches": result
     }
+```
