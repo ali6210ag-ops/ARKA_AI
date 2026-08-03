@@ -13,36 +13,35 @@ def recommend_supplier(request_id: int):
 
     db = SessionLocal()
 
-    request = (
-        db.query(TradeRequest)
-        .filter(
-            TradeRequest.id == request_id
-        )
-        .first()
-    )
+    try:
 
-    if request is None:
-        db.close()
+        request = (
+            db.query(TradeRequest)
+            .filter(
+                TradeRequest.id == request_id
+            )
+            .first()
+        )
+
+        if request is None:
+            return {
+                "error": "Request not found"
+            }
+
+        engine = ARKAMatchingEngine()
+
+        matches = engine.find_match(
+            request.product_needed
+        )
 
         return {
-            "error": "Request not found"
+            "request_id": request.id,
+            "product": request.product_needed,
+            "quantity": request.quantity,
+            "budget": request.budget,
+            "recommendations": matches
         }
 
+    finally:
 
-    engine = ARKAMatchingEngine()
-
-    matches = engine.find_match(
-        request.product_needed
-    )
-
-
-    db.close()
-
-
-    return {
-        "request_id": request.id,
-        "product": request.product_needed,
-        "quantity": request.quantity,
-        "budget": request.budget,
-        "recommendations": matches
-    }
+        db.close()
